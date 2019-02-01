@@ -24,16 +24,27 @@ class WifiModule(object):
         self.access_point.active(False)
         self.access_point = None
 
-    def wifi_connect(self, ssid, pwd):
+    def connect(self, ssid, pwd):
         """
         Connect wifi network
         """
         self.conn = network.WLAN(network.STA_IF)
         self.conn.active(True)
+        intent_counter = 0
         if not self.conn.isconnected():
             self.conn.connect(ssid, pwd)
-            while not self.conn.isconnected():
+            while self.conn is not None and not self.conn.isconnected():
                 time.sleep(.1)
-        return self.conn.isconnected()
+                if intent_counter > 5:
+                    break
+                intent_counter += 1
+        if not self.conn.isconnected():
+            self.conn.active(False)
+            self.conn = None
+            return False
+        else:
+            return self.conn.isconnected()
 
-    def
+    def disconnect(self):
+        if self.conn is not None:
+            self.conn.disconnect()
